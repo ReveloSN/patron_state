@@ -30,6 +30,12 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, exception.getMessage(), request);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleIllegalArgument(IllegalArgumentException exception, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, exception.getMessage(), request);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodArgumentNotValid(

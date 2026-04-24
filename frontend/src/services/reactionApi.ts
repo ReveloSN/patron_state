@@ -5,6 +5,7 @@ import type {
   MeasurementPayload,
   UpdateConditionPayload,
 } from "../types/api";
+import type { CompoundDetails, CompoundSummary, ReactionRecipe } from "../types/catalog";
 import type { Reaction } from "../types/reaction";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
@@ -92,5 +93,15 @@ export const reactionApi = {
     return request<Reaction>(`/reactions/${reactionId}/cancel`, {
       method: "POST",
     });
+  },
+  searchCompounds(query: string) {
+    const searchParams = new URLSearchParams({ query });
+    return request<CompoundSummary[]>(`/catalog/compounds?${searchParams.toString()}`);
+  },
+  findCompoundDetails(externalId: string) {
+    return request<CompoundDetails>(`/catalog/compounds/${encodeURIComponent(externalId)}`);
+  },
+  listReactionRecipes() {
+    return request<ReactionRecipe[]>("/catalog/recipes");
   },
 };

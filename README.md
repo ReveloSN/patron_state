@@ -6,6 +6,7 @@ Full-stack implementation of a controlled chemical reaction tracking system usin
 - `React + TypeScript + Vite` for the frontend
 - in-memory persistence
 - the `State` pattern in the domain model
+- a hybrid compound catalog with optional PubChem lookup and local offline fallback
 
 ## Project structure
 
@@ -42,3 +43,17 @@ cd backend
 cd frontend
 npm run build
 ```
+
+## Online and offline catalog
+
+The backend exposes a hybrid chemical reference catalog:
+
+- When external connectivity is available, the backend can query PubChem for compound names, synonyms, molecular formula, molecular weight, and external identifiers.
+- When there is no internet connection or PubChem is unavailable, the backend automatically falls back to the local educational compound catalog.
+- Educational recipes are always served from the local catalog.
+
+Available catalog endpoints:
+
+- `GET /api/catalog/compounds?query=...`
+- `GET /api/catalog/compounds/{externalId}`
+- `GET /api/catalog/recipes`

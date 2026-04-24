@@ -1,4 +1,6 @@
-import { startTransition, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
+import { CompoundCatalogPanel } from "../components/catalog/CompoundCatalogPanel";
+import { ReactionRecipeCatalogPanel } from "../components/catalog/ReactionRecipeCatalogPanel";
 import { AddReactantForm } from "../components/AddReactantForm";
 import { CreateReactionForm } from "../components/CreateReactionForm";
 import { CurrentConditionsPanel } from "../components/CurrentConditionsPanel";
@@ -6,6 +8,7 @@ import { MeasurementForm } from "../components/MeasurementForm";
 import { PhaseActionsPanel } from "../components/PhaseActionsPanel";
 import { PhaseStatusPanel } from "../components/PhaseStatusPanel";
 import { reactionApi } from "../services/reactionApi";
+import type { CompoundDetails, CompoundSummary, ReactionRecipe } from "../types/catalog";
 import type {
   AddReactantPayload,
   CreateReactionPayload,
@@ -34,6 +37,14 @@ export function ReactionPage() {
   const [reaction, setReaction] = useState<Reaction | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [compoundResults, setCompoundResults] = useState<CompoundSummary[]>([]);
+  const [selectedCompound, setSelectedCompound] = useState<CompoundDetails | null>(null);
+  const [catalogPending, setCatalogPending] = useState(false);
+  const [compoundDetailsPending, setCompoundDetailsPending] = useState(false);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [recipes, setRecipes] = useState<ReactionRecipe[]>([]);
+  const [recipesPending, setRecipesPending] = useState(false);
+  const [recipesError, setRecipesError] = useState<string | null>(null);
 
   const tone = reaction ? getStatusMeta(reaction.status).tone : "prepared";
 
@@ -48,6 +59,71 @@ export function ReactionPage() {
       setError(getErrorMessage(requestError));
     } finally {
       setPending(false);
+    }
+  }
+
+  async function loadCatalogReferences() {
+    setCatalogPending(true);
+    setRecipesPending(true);
+    setCatalogError(null);
+    setRecipesError(null);
+
+    try {
+      const [compounds, recipeList] = await Promise.all([
+        reactionApi.searchCompounds(""),
+        reactionApi.listReactionRecipes(),
+      ]);
+
+      startTransition(() => {
+        setCompoundResults(compounds);
+        setRecipes(recipeList);
+      });
+    } catch (requestError) {
+      const message = getErrorMessage(requestError);
+      setCatalogError(message);
+      setRecipesError(message);
+    } finally {
+      setCatalogPending(false);
+      setRecipesPending(false);
+    }
+  }
+
+  useEffect(() => {
+    const timerId = window.setTimeout(() => {
+      void loadCatalogReferences();
+    }, 0);
+
+    return () => window.clearTimeout(timerId);
+  }, []);
+
+  async function handleSearchCompounds(query: string) {
+    setCatalogPending(true);
+    setCatalogError(null);
+
+    try {
+      const compounds = await reactionApi.searchCompounds(query);
+      startTransition(() => {
+        setCompoundResults(compounds);
+        setSelectedCompound(null);
+      });
+    } catch (requestError) {
+      setCatalogError(getErrorMessage(requestError));
+    } finally {
+      setCatalogPending(false);
+    }
+  }
+
+  async function handleSelectCompound(externalId: string) {
+    setCompoundDetailsPending(true);
+    setCatalogError(null);
+
+    try {
+      const compoundDetails = await reactionApi.findCompoundDetails(externalId);
+      startTransition(() => setSelectedCompound(compoundDetails));
+    } catch (requestError) {
+      setCatalogError(getErrorMessage(requestError));
+    } finally {
+      setCompoundDetailsPending(false);
     }
   }
 
@@ -225,6 +301,23 @@ export function ReactionPage() {
                 </div>
               </div>
 
+              <div className="reference-grid">
+                <CompoundCatalogPanel
+                  compounds={compoundResults}
+                  selectedCompound={selectedCompound}
+                  pending={catalogPending}
+                  detailsPending={compoundDetailsPending}
+                  error={catalogError}
+                  onSearch={handleSearchCompounds}
+                  onSelectCompound={handleSelectCompound}
+                />
+                <ReactionRecipeCatalogPanel
+                  recipes={recipes}
+                  pending={recipesPending}
+                  error={recipesError}
+                />
+              </div>
+
               <section className="panel-section">
                 <div className="section-heading">
                   <h3>Measurement history</h3>
@@ -262,29 +355,48 @@ export function ReactionPage() {
               </section>
             </>
           ) : (
-            <section className="panel-section">
-              <div className="section-heading">
-                <h3>Expected lifecycle</h3>
-                <p>
-                  Create the reaction, add reactants, start execution, register measurements, and let the safety policy drive valid transitions.
-                </p>
-              </div>
+            <>
+              <section className="panel-section">
+                <div className="section-heading">
+                  <h3>Expected lifecycle</h3>
+                  <p>
+                    Create the reaction, add reactants, start execution, register measurements, and let the safety policy drive valid transitions.
+                  </p>
+                </div>
 
-              <ul className="action-list">
-                <li>
-                  <strong>Prepared</strong>
-                  <span>Reactants and setup can still change.</span>
-                </li>
-                <li>
-                  <strong>InProgress</strong>
-                  <span>Measurements are accepted and checked for unsafe thresholds.</span>
-                </li>
-                <li>
-                  <strong>Paused / Unstable / Closed</strong>
-                  <span>Only the transitions allowed by the current state remain visible.</span>
-                </li>
-              </ul>
-            </section>
+                <ul className="action-list">
+                  <li>
+                    <strong>Prepared</strong>
+                    <span>Reactants and setup can still change.</span>
+                  </li>
+                  <li>
+                    <strong>InProgress</strong>
+                    <span>Measurements are accepted and checked for unsafe thresholds.</span>
+                  </li>
+                  <li>
+                    <strong>Paused / Unstable / Closed</strong>
+                    <span>Only the transitions allowed by the current state remain visible.</span>
+                  </li>
+                </ul>
+              </section>
+
+              <div className="reference-grid">
+                <CompoundCatalogPanel
+                  compounds={compoundResults}
+                  selectedCompound={selectedCompound}
+                  pending={catalogPending}
+                  detailsPending={compoundDetailsPending}
+                  error={catalogError}
+                  onSearch={handleSearchCompounds}
+                  onSelectCompound={handleSelectCompound}
+                />
+                <ReactionRecipeCatalogPanel
+                  recipes={recipes}
+                  pending={recipesPending}
+                  error={recipesError}
+                />
+              </div>
+            </>
           )}
         </section>
       </main>

@@ -213,6 +213,12 @@
   gap: 1.4rem;
 }
 
+.reference-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 1.4rem;
+}
+
 .workspace-column {
   display: grid;
   gap: 1.4rem;
@@ -507,6 +513,151 @@
   word-break: break-all;
 }
 
+.catalog-search {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.catalog-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.catalog-results,
+.catalog-detail {
+  border: 1px solid rgba(21, 34, 42, 0.08);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.58);
+  padding: 1rem;
+}
+
+.catalog-list,
+.detail-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.catalog-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.catalog-result {
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(21, 34, 42, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 252, 247, 0.92);
+  padding: 0.9rem;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.catalog-result:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.catalog-result__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+}
+
+.catalog-result__top span {
+  color: var(--text-muted);
+}
+
+.catalog-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.32rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.pill--neutral {
+  background: rgba(21, 34, 42, 0.08);
+  color: #24343d;
+}
+
+.pill--source-local {
+  background: rgba(31, 124, 112, 0.14);
+  color: #0f5f56;
+}
+
+.pill--source-pubchem {
+  background: rgba(171, 110, 44, 0.16);
+  color: #8b5415;
+}
+
+.detail-group {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.detail-group strong {
+  font-family: "Space Grotesk", sans-serif;
+}
+
+.detail-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.detail-list li {
+  display: grid;
+  gap: 0.2rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(21, 34, 42, 0.08);
+}
+
+.detail-list li:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.recipe-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.recipe-card {
+  border: 1px solid rgba(21, 34, 42, 0.08);
+  border-radius: 1.35rem;
+  background: rgba(255, 255, 255, 0.62);
+  padding: 1rem;
+}
+
+.recipe-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.recipe-card__header h4 {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.08rem;
+}
+
+.recipe-card p {
+  color: var(--text-muted);
+}
+
 @keyframes rise {
   from {
     opacity: 0;
@@ -560,10 +711,12 @@
   }
 
   .workspace-grid,
+  .reference-grid,
   .metric-row,
   .measurement-values,
   .form-grid,
-  .form-grid--triple {
+  .form-grid--triple,
+  .catalog-layout {
     grid-template-columns: 1fr;
   }
 
